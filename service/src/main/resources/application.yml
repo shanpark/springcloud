@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: SOME-SERVICE
+  datasource:
+    # Maria DB
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://192.168.1.20:3307/TestDB
+    username: tester
+    password: Tester123!@#
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics
+#  endpoint:
+#    health:
+#      show-details: always
+#    info: ## endpoint 활성화 및 비활성화 방법
+#      enabled: true
+
+info:
+  app:
+    name: "Sample Service Implementation"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://192.168.1.156:8761/eureka, http://192.168.1.103:8761/eureka
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+
+# Logback Config
+logging:
+  config: classpath:logback.xml
+
+---
+
+spring:
+  profiles: service1
+
+server:
+  port: 18091
+
+---
+
+spring:
+  profiles: service2
+
+server:
+  port: 18092

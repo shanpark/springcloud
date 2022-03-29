@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="iotree.service.mapper.SampleMapper" >
+
+    <!-- 
+    <select id="getTopicCount" resultType="Integer" databaseId="oracle">
+        SELECT COUNT(*)
+        FROM TOPIC
+        WHERE PROJECT_UID = #{projectUid}
+    </select>
+
+    <select id="getTopicList" resultType="iotree.service.vo.TopicVo" databaseId="oracle">
+        SELECT *
+        FROM (
+            SELECT TOPIC, DESCRIPTION, CREATED, ROWNUM AS RN
+            FROM (
+                SELECT TOPIC, DESCRIPTION, CREATED
+                FROM TOPIC
+                WHERE PROJECT_UID = #{projectUid}
+                ORDER BY CREATED DESC
+            )
+        )
+        WHERE RN BETWEEN (#{from} + 1) AND (#{from} + #{count})
+    </select>
+
+    <insert id="createTopic" databaseId="oracle">
+        INSERT INTO TOPIC
+            (PROJECT_UID, TOPIC, DESCRIPTION)
+        VALUES
+            (#{projectUid}, #{topic}, #{description, jdbcType=VARCHAR})
+    </insert>
+
+    <update id="updateTopic" databaseId="oracle">
+        UPDATE TOPIC
+        SET DESCRIPTION = #{description, jdbcType=VARCHAR}
+        WHERE TOPIC = #{topic}
+    </update>
+
+    <delete id="deleteTopic" databaseId="oracle">
+        DELETE FROM TOPIC
+        WHERE PROJECT_UID = #{projectUid} AND TOPIC = #{topic}
+    </delete>
+    -->
+
+</mapper>

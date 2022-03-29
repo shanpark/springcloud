@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: SOME-SERVICE
+          uri: lb://SOME-SERVICE
+          predicates:
+            - Path=/rest/**
+          filters:
+            - name: Logger
+              args:
+                enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://192.168.1.156:8761/eureka,http://192.168.1.103:8761/eureka
+
+logging:
+  config: classpath:logback.xml
+
+---
+
+spring:
+  profiles: gateway1
+
+server:
+  port: 9001
+
+---
+
+spring:
+  profiles: gateway2
+
+server:
+  port: 9002
