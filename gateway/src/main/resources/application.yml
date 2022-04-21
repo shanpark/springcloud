@@ -1,38 +1,90 @@
 spring:
   application:
-    name: GATEWAY
+    name: TREE-GATEWAY
   cloud:
     gateway:
       routes:
+        - id: HEALTH-CHECK
+          uri: lb://TREE-GATEWAY # madatory지만 filter에서 완료되기 때문에 의미 없음.
+          predicates:
+            - Path=/healthcheck
+          filters:
+            - name: HealthCheck
+
+        - id: FRONT_ROOT
+          uri: lb://TREE-AUTH
+          predicates:
+            - Path=/
+          filters:
+            - name: Logger
+
+        - id: OAUTH-SERVICE
+          uri: lb://TREE-AUTH
+          predicates:
+            - Path=/oauth2/authorization/**
+          filters:
+            - name: Logger
+
+        - id: POST-OAUTH-SERVICE
+          uri: lb://TREE-AUTH
+          predicates:
+            - Path=/login/oauth2/code/**
+          filters:
+            - name: Logger
+
+        - id: LOGIN-SERVICE
+          uri: lb://TREE-AUTH
+          predicates:
+            - Path=/auth/login
+          filters:
+            - name: Logger
+
+        - id: AUTH-SERVICE
+          uri: lb://TREE-AUTH
+          predicates:
+            - Path=/auth/**
+          filters:
+            - name: Logger
+            - name: JwtAuth
+              args:
+                authorities: ROLE_USER
+
         - id: SOME-SERVICE
           uri: lb://SOME-SERVICE
           predicates:
             - Path=/rest/**
           filters:
             - name: Logger
+            - name: JwtAuth
               args:
-                enabled: true
+                authorities: ROLE_USER
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://192.168.1.156:8761/eureka,http://192.168.1.103:8761/eureka
+        - id: FRONT-HANDLER
+          uri: lb://TREE-AUTH
+          predicates:
+            - Path=/**
 
-logging:
-  config: classpath:logback.xml
-
----
-
-spring:
-  profiles: gateway1
+gateway:
+  filter:
+    jwt-auth:
+      cookie-name: jwt
+      secret-key: Ke5r!tW*teiif3xm6d#nh_afeijfv39ru!68h-r!ewijfsajif8ewjh5dw2m2dwk # authservice가 제공하는 key값과 같아야 한다.
+      header-name: X-Auth
+      jwt-claims: sub, name
 
 server:
   port: 9001
 
----
+eureka:
+  client:
+    service-url:
+      defaultZone: http://192.168.1.156:8761/eureka, http://192.168.1.103:8761/eureka
 
-spring:
-  profiles: gateway2
+logging:
+  config: classpath:logback.xml
 
-server:
-  port: 9002
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics
