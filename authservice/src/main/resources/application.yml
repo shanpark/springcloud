@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: TREE-AUTH
+  profiles:
+    include: oauth
+  datasource:
+    # Maria DB
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://nas.iotree.co.kr:3307/ioTreeERP2
+    username: erp2
+    password: PAo!7cauuT@KweZ4
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://192.168.1.156:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics
+
+server:
+  port: 9100
+
+auth:
+  header: X-Auth
+  success-url: http://devsvr.com:9001/ # oauth후에 redirect 시킬 URL이다. JWT 쿠키가 로그인 요청 domain에 설정되기 때문에 로그인 요청과 같은 domain이어야 한다.
+  default-role: ROLE_USER
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+# Logback Config
+logging:
+  config: classpath:logback.xml

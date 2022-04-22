@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="iotree.authservice.mapper.SampleMapper" >
+
+    <!-- 
+    <select id="getTopicCount" resultType="Integer" databaseId="mysql">
+        SELECT COUNT(*)
+        FROM Topic
+        WHERE projectUid = #{projectUid}
+    </select>
+
+    <select id="getTopicList" resultType="iotree.authservice.vo.TopicVo" databaseId="mysql">
+        SELECT topic, description, created
+        FROM Topic
+        WHERE projectUid = #{projectUid}
+        ORDER BY created DESC
+        LIMIT #{from}, #{count}
+    </select>
+
+    <insert id="createTopic" databaseId="mysql">
+        INSERT INTO Topic
+            (projectUid, topic, description)
+        VALUES
+            (#{projectUid}, #{topic}, #{description})
+    </insert>
+
+    <update id="updateTopic" databaseId="mysql">
+        UPDATE Topic
+        SET description = #{description}
+        WHERE topic = #{topic}
+    </update>
+
+    <delete id="deleteTopic" databaseId="mysql">
+        DELETE FROM Topic
+        WHERE projectUid = #{projectUid} AND topic = #{topic}
+    </delete>
+    -->
+
+</mapper>

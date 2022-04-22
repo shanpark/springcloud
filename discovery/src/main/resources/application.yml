@@ -4,12 +4,15 @@ spring:
 
 eureka:
   instance:
-    preferIpAddress: true
-    lease-expiration-duration-in-seconds: 30
-    hostname: 192.168.1.156
+    hostname: localhost
+    prefer-ip-address: true
+    lease-expiration-duration-in-seconds: 60
   client:
-    serviceUrl:
-      defaultZone: http://192.168.1.103:8761/eureka/
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      # 'default-zone'으로 지정하면 안됨.
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
 
 server:
   port: 8761
@@ -22,15 +25,3 @@ management:
 
 logging:
   config: classpath:logback.xml
-
----
-
-spring:
-  profiles: eureka2
-
-eureka:
-  instance:
-    hostname: 192.168.1.103
-  client:
-    serviceUrl:
-      defaultZone: http://192.168.1.156:8761/eureka/
