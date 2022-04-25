@@ -21,6 +21,8 @@ import java.util.Map;
 public interface AuthService {
     /**
      * LoginReqDto 객체를 받아서 인증을 수행하고 인증이 성공적인 경우 Authentication 객체를 생성하여 반환한다.
+     * 다른 서비스와 연동해서 인증을 수행한다고 하더라도 여기서 구현해야 한다. 따라서 비동기 방식이 아닌 동기 방식으로
+     * 통신을 구현해야 한다.
      *
      * @param loginReqDto 인증을 수행하기위한 정보를 담고 있는 객체. 규격에 따라 다르지만 일반적으로 userId, password 같은 정보를
      *                   담고 있다.

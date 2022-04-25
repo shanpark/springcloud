@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import iotree.gateway.constants.ResultCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,8 @@ import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -65,7 +68,7 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
     }
 
     private static final Jackson2JsonEncoder JSON_ENCODER = new Jackson2JsonEncoder();
-    private static final ResponseDto UNKNOWN_ERR = new ResponseDto(-99, "Unknown error.");
+    private static final ResponseDto UNKNOWN_ERR = new ResponseDto(ResultCode.UNKNOWN_ERR.value(), "Unknown error.");
     private static final ResolvableType RESP_OBJ_TYPE = ResolvableType.forInstance(UNKNOWN_ERR);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static SecretKey KEY = null; // postConstruct에서 초기화.
@@ -85,13 +88,13 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
             ResponseDto responseDto = null;
             ServerHttpRequest request = exchange.getRequest();
             List<HttpCookie> httpCookies = request.getCookies().get(cookieName);
-            if (httpCookies != null) {
+            if (!CollectionUtils.isEmpty(httpCookies)) {
                 for (HttpCookie cookie : httpCookies) {
                     Claims claims = validateJwt(cookie.getValue());
-                    if (claims != null) { // claims를 반환했으면 일단 jwt는 정상이다.
+                    if (claims != null) { // 비어있더라도 claims를 반환했으면 일단 jwt는 정상이다.
                         if (checkAuthority(config, claims)) { // 권한 검사 통과하면 헤더 작성.
                             try {
-                                if ((headerName != null) && !headerName.isEmpty()){
+                                if (StringUtils.hasText(headerName)){
                                     String authHeader = makeAuthHeader(claims);
                                     ServerHttpRequest newRequest = request.mutate().header(headerName, authHeader).build();
                                     ServerWebExchange newExchange = exchange.mutate().request(newRequest).build();
@@ -100,18 +103,20 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
                                     return chain.filter(exchange); // downstream으로 header를 보낼 필요 없다면 그냥 통과.
                                 }
                             } catch (JsonProcessingException ignored) { // serialization 실패로 인한 헤더 작성 실패.
-                                responseDto = new ResponseDto(-1, "JWT claims serialization failed.");
+                                responseDto = new ResponseDto(ResultCode.JWT_SERIALIZATION_ERR.value(), "JWT claims serialization failed.");
                             }
                         } else {
-                            responseDto = new ResponseDto(-3, "Access with invalid authority.");
+                            responseDto = new ResponseDto(ResultCode.AUTHORITY_ERR.value(), "Access with invalid authority.");
                         }
                     }
                 }
                 if (responseDto == null)
-                    responseDto = new ResponseDto(-2, "'" + cookieName + "'Cookie exists but invalid.");
+                    responseDto = new ResponseDto(ResultCode.INVALID_COOKIE_ERR.value(), "'" + cookieName + "'Cookie exists but invalid.");
             } else {
-                responseDto = new ResponseDto(-1, "No '" + cookieName + "' cookie found.");
+                responseDto = new ResponseDto(ResultCode.COOKE_NOT_FOUND_ERR.value(), "No '" + cookieName + "' cookie found.");
             }
+
+            log.warn("Unauthorized request. [{}: {}: {}]", request.getPath(), responseDto.code, responseDto.message);
 
             // 여기까지 왔으면 통과 불가. 401과 실패 ResponseDto를 Body로 보내준다.
             ServerWebExchangeUtils.setResponseStatus(exchange, HttpStatus.UNAUTHORIZED); // 401 OK
@@ -137,7 +142,7 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
      */
     private Claims validateJwt(String jwt) {
         try {
-            if (jwt != null) {
+            if (StringUtils.hasText(jwt)) {
                 // JWT parsing
                 return Jwts.parserBuilder()
                         .setSigningKey(KEY)
@@ -159,9 +164,9 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
      */
     private boolean checkAuthority(Config config, Map<String, Object> claims) {
         List<String> authorities = config.getAuthorities();
-        if ((authorities != null) && !authorities.isEmpty()) { // 권한 검사가 필요.
+        if (!CollectionUtils.isEmpty(authorities)) { // 권한 검사가 필요.
             @SuppressWarnings("unchecked") Collection<String> roles = (Collection<String>) claims.get("authorities");
-            if ((roles != null) && !roles.isEmpty()) { // JWT에 role 정보가 없으면 통과 불가.
+            if (!CollectionUtils.isEmpty(roles)) { // JWT에 role 정보가 없으면 통과 불가.
                 for (String role : roles) {
                     if (authorities.contains(role))
                         return true;
@@ -183,13 +188,9 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
      */
     private String makeAuthHeader(Claims claims) throws JsonProcessingException {
         Map<String, Object> resultClaims = new HashMap<>();
-        if ((jwtClaims != null) && !jwtClaims.isEmpty()) {
-            Object value;
+        if (!CollectionUtils.isEmpty(jwtClaims)) {
             for (String claim : jwtClaims) {
-                if (claim.equalsIgnoreCase("sub"))
-                    value = claims.getSubject();
-                else
-                    value = claims.get(claim);
+                Object value = claims.get(claim);
                 if (value != null)
                     resultClaims.put(claim, value);
             }

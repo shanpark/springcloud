@@ -2,6 +2,7 @@ package iotree.authservice.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
+import iotree.authservice.constants.ResultCode;
 import iotree.authservice.dto.LoginReqDto;
 import iotree.authservice.dto.LoginRespDto;
 import iotree.authservice.mapper.AuthMapper;
@@ -38,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Authentication authenticate(LoginReqDto loginReqDto) {
-        UserVo userVo = authMapper.getUserById(loginReqDto.getUserId());
+        UserVo userVo = authMapper.getUserById(loginReqDto.getId());
         if (userVo != null) {
             if (PASSWORD_ENCODER.matches(loginReqDto.getPassword(), userVo.getPassword())) {
                 List<String> roles = authMapper.getUserAuthorities(userVo.getId());
@@ -57,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginRespDto getSuccessfulAuthResponseBody(Authentication authentication) {
         LoginRespDto loginRespDto = new LoginRespDto();
-        loginRespDto.setCode(0);
+        loginRespDto.setCode(ResultCode.SUCCESS.value());
         loginRespDto.setUser((UserVo) authentication.getPrincipal());
         return loginRespDto;
     }
@@ -66,9 +67,9 @@ public class AuthServiceImpl implements AuthService {
     public LoginRespDto getUnsuccessfulAuthResponseBody(Exception cause) {
         LoginRespDto loginRespDto = new LoginRespDto();
         if (cause instanceof BadCredentialsException) {
-            loginRespDto.setCode(-1); // invalid id or password
+            loginRespDto.setCode(ResultCode.BAD_CREDENTIALS.value()); // invalid id or password
         } else {
-            loginRespDto.setCode(-99); // unknown
+            loginRespDto.setCode(ResultCode.UNKNOWN_ERR.value()); // unknown
         }
         loginRespDto.setMessage(cause.getLocalizedMessage());
         return loginRespDto;

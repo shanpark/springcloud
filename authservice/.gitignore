@@ -238,7 +238,8 @@ replay_pid*
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -362,3 +363,9 @@ gradle-app.setting
 
 ### Custom ###
 log/
+src/main/resources/static/css/
+src/main/resources/static/fonts/
+src/main/resources/static/icons/
+src/main/resources/static/js/
+src/main/resources/static/favicon.ico
+src/main/resources/static/index.html

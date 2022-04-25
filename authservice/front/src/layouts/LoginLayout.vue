@@ -105,7 +105,7 @@ export default {
 
       axios
         .post("/auth/login", {
-          userId: email.value,
+          id: email.value,
           password: password.value,
         })
         .then((res) => {
